@@ -374,6 +374,7 @@
             priceanditem.insertAdjacentHTML('beforeend', element);
         });
         print()
+        clearlocalstorage()
     }
     let i = 0;
     async function savedata() {
@@ -411,7 +412,7 @@
                 alert(`Failed to save the bill: ${response.statusText}`);
             }
         }
-
+        clearlocalstorage()
     }
 </script>
 
