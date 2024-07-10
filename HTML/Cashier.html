@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing-Counter</title>
+    <link rel="stylesheet" href="/Cashier.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="inputformsandtable">
+            <div class="inputform">
+                <form id="addform">
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Product Name :</label>
+                        <input type="text" class="form-control" name="ProductName" id="ProductName"
+                            aria-describedby="emailHelp" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Product Price :</label>
+                        <input type="text" class="form-control" name="ProductPrice" id="ProductPrice"
+                            aria-describedby="emailHelp" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Product Company :</label>
+                        <input type="text" class="form-control" name="Productcompany" id="Productcompany"
+                            aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Product Quantity :</label>
+                        <input type="text" class="form-control" name="ProductQuantity" id="ProductQuantity"
+                            aria-describedby="emailHelp" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+            </div>
+            <div class="table">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <td>No</td>
+                            <td>Product Name</td>
+                            <td>Product Company</td>
+                            <td>Product Price</td>
+                            <td>Product Quantity</td>
+                            <td>Total Price</td>
+                            <td>Action</td>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tabledata">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="billinfo" id="billinfo">
+            <div class="CashierData">
+                <h3>Total Product :00</h3>
+                <h3>Total Price :00</h3>
+            </div>
+            <div class="CashierData">
+                <div class="cashRecived">
+                    <h3>Total Cash Recived :</h3>
+                    <input type="text" class="form-control cashinput" aria-describedby="emailHelp">
+                    <button type="button" class="btn btn-primary">Change</button>
+                </div>
+                <h3>Total change : <span>00</span></h3>
+            </div>
+            <div class="CashierData">
+                <h3>Other Payment option : </h3>
+                <div>
+                    <button type="button" onclick="clearlocalstorage()" class="btn btn-danger">Clear Table</button>
+                    <button type="button" onclick="savedata()" class="btn btn-success">Save Data</button>
+                    <button type="button" onclick="printbill()" class="btn btn-primary">Print Bill</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="displayallbilldata">
+            <table class="table table-striped table-hover forflexcolumn">
+                <thead>
+                    <tr>
+                        <td>No</td>
+                        <td>Product Name</td>
+                        <td>Product Company</td>
+                        <td>Product Price</td>
+                        <td>Product Quantity</td>
+                        <td>Total Price</td>
+                    </tr>
+                </thead>
+
+                <tbody id="tabledataforbill">
+
+                </tbody>
+            </table>
+
+            <div class="priceanditem">
+
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script>
+
+    let UpdateIndex = 0;
+    let Indexfordataupdation = 0
+    let totalPrice = 0;
+    let totalItem = 0;
+    let cashierName;
+    let cashierId;
+    let allproduct;
+    fetch('/Cashier/data')
+        .then(response => { return response.json() })
+        .then(data => {
+            const container = document.getElementsByClassName("container")[0]
+            cashierName = data.fullname;
+            cashierId = data._id
+            const element = `<div class="Cashier-Data">
+            <h1>Welcome to a DMART</h1>
+            <div class="CashierData">
+                <h3>Cashier Name :${data.fullname}</h3>
+                <h3>Cashier Id :${data._id} </h3>
+            </div>
+            <div class="CashierData">
+                <h3>Date :${date}</h3>
+                <h3>Starting Time :${time}</h3>
+            </div>
+            <div class="CashierData">
+                <h3>System No : 01</h3>
+                <button type="button" onclick="handleClick()" id="logoutbtn" class="btn btn-danger">Logout</button>
+            </div>
+        </div>`
+
+            container.insertAdjacentHTML('afterbegin', element);
+        })
+
+    function getFormattedDateTime() {
+        const now = new Date();
+
+
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = now.getFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+
+
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        const formattedTime = `${hours}:${minutes} ${ampm}`;
+
+        return {
+            date: formattedDate,
+            time: formattedTime
+        };
+    }
+
+    const { date, time } = getFormattedDateTime();
+
+    async function handleClick() {
+        const response = await fetch('/logout');
+        if (response.redirected) {
+            window.location.href = response.url;
+        }
+    }
+
+    const form = document.getElementById("addform")
+
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        if (UpdateIndex == 0) {
+            if (data.ProductName == "" && data.Productcompany == "" && data.ProductPrice == "" && data.ProductQuantity == "") {
+                alert("Fill full information")
+            } else {
+                const storeddata = JSON.parse(localStorage.getItem('formData')) || [];
+                storeddata.push(data);
+
+                localStorage.setItem('formData', JSON.stringify(storeddata))
+                form.reset();
+            }
+        }
+        else {
+            const storedData = JSON.parse(localStorage.getItem('formData')) || [];
+            storedData[Indexfordataupdation] = { ...storedData[Indexfordataupdation], ...data };
+            localStorage.setItem('formData', JSON.stringify(storedData));
+            form.reset();
+            UpdateIndex = 0;
+        }
+        let count = 0;
+        allproduct = [];
+        const Billdatafortable = JSON.parse(localStorage.getItem('formData')) || [];
+
+        const tabledata = document.getElementById("tabledata")
+        tabledata.innerHTML = ""
+        Billdatafortable.map((v, i) => {
+            const totalproductprice = v.ProductPrice * v.ProductQuantity;
+            allproduct = [...allproduct, v.ProductName]
+            const element = `<tr>
+                            <td>${i + 1}</td>
+                            <td>${v.ProductName}</td>
+                            <td>${v.Productcompany}</td>
+                            <td>${v.ProductPrice}</td>
+                            <td>${v.ProductQuantity}</td>
+                            <td>${totalproductprice}</td>
+                            <td>
+                                <button type="button" onclick="handledeletetableitem(${i})" class="btn btn-danger">Delete</button>
+                                <button type="button" onclick="handledupdateitem(${i})" class="btn btn-warning">Update</button>
+                            </td>
+                        </tr>`
+            tabledata.insertAdjacentHTML('beforeend', element);
+        })
+
+        //code for a billinfo
+        totalItem = 0;
+        totalPrice = 0;
+        Billdatafortable.map((v) => {
+            const totalproductprice = v.ProductPrice * v.ProductQuantity;
+            totalItem += parseInt(v.ProductQuantity, 10);
+            totalPrice += parseInt(totalproductprice, 10)
+        })
+        const billinfo = document.getElementById("billinfo")
+        billinfo.innerHTML = ""
+        let elementinfo = `<div class="CashierData">
+                <h3>Total Product :${totalItem}</h3>
+                <h3>Total Price :${totalPrice}</h3>
+            </div>
+            <div class="CashierData">
+              <div class="cashRecived">
+                <h3>Total Cash Recived :</h3>
+                    <input type="text" class="form-control cashinput" id="Cashdata" aria-describedby="emailHelp">
+                    <button type="button" onclick="handlecashchange()" class="btn btn-primary">Change</button>
+              </div>
+                <h3>Total change : <span id="cashremainbox">00</span></h3>
+            </div>
+            <div class="CashierData">
+                <h3>Other Payment option : </h3>
+                <div>
+                    <button type="button" onclick="clearlocalstorage()" class="btn btn-danger">Clear Table</button>
+                    <button type="button" onclick="savedata()" class="btn btn-success">Save Data</button>
+                    <button type="button" onclick="printbill()" class="btn btn-primary">Print Bill</button>
+                </div>
+            </div>`
+        billinfo.insertAdjacentHTML("beforeend", elementinfo)
+    });
+
+    function handlecashchange() {
+        let moneychange = 0
+        let cashgetbyuser = Cashdata.value;
+        moneychange = cashgetbyuser - totalPrice;
+        if (moneychange < 0) {
+            moneychange = -moneychange
+        }
+        cashremainbox.innerHTML = moneychange;
+    }
+
+    function clearlocalstorage() {
+        localStorage.clear()
+        tabledata.innerHTML = ""
+        const billinfo = document.getElementById("billinfo")
+        billinfo.innerHTML = ""
+        let elementinfo = `<div class="CashierData">
+                <h3>Total Product :00</h3>
+                <h3>Total Price :00</h3>
+            </div>
+            <div class="CashierData">
+              <div class="cashRecived">
+                <h3>Total Cash Recived :</h3>
+                    <input type="text" class="form-control cashinput" id="Cashdata" aria-describedby="emailHelp">
+                    <button type="button" onclick="handlecashchange()" class="btn btn-primary">Change</button>
+              </div>
+                <h3>Total change : <span id="cashremainbox">00</span></h3>
+            </div>
+            <div class="CashierData">
+                <h3>Other Payment option : </h3>
+                <div>
+                    <button type="button" onclick="clearlocalstorage()" class="btn btn-danger">Clear Table</button>
+                    <button type="button" onclick="savedata()" class="btn btn-success">Save Data</button>
+                    <button type="button" onclick="printbill()" class="btn btn-primary">Print Bill</button>
+                </div>
+            </div>`
+        billinfo.insertAdjacentHTML("beforeend", elementinfo)
+
+        const priceanditemElements = document.getElementsByClassName("priceanditem");
+        priceanditemElements.innerHTML = ""
+    }
+
+    function handledeletetableitem(index) {
+        const Billdatafortable = JSON.parse(localStorage.getItem('formData')) || [];
+
+        Billdatafortable.splice(index, 1);
+
+        localStorage.setItem('formData', JSON.stringify(Billdatafortable));
+
+        const tabledata = document.getElementById("tabledata")
+        tabledata.innerHTML = ""
+        Billdatafortable.map((v, i) => {
+            const totalproductprice = v.ProductPrice * v.ProductQuantity;
+
+            const element = `<tr>
+                            <td>${i + 1}</td>
+                            <td>${v.ProductName}</td>
+                            <td>${v.Productcompany}</td>
+                            <td>${v.ProductPrice}</td>
+                            <td>${v.ProductQuantity}</td>
+                            <td>${totalproductprice}</td>
+                            <td>
+                                <button type="button" onclick="handledeletetableitem(${i})" class="btn btn-danger">Delete</button>
+                                <button type="button" onclick="handledupdateitem(${i})" class="btn btn-warning">Update</button>
+                            </td>
+                        </tr>`
+            tabledata.insertAdjacentHTML('beforeend', element);
+        })
+    }
+
+    function handledupdateitem(index) {
+        const Billdatafortable = JSON.parse(localStorage.getItem('formData')) || [];
+        const dataforupdate = Billdatafortable.filter((v, i) => i == index)[0];
+        ProductName.value = `${dataforupdate.ProductName}`
+        Productcompany.value = `${dataforupdate.Productcompany}`
+        ProductPrice.value = `${dataforupdate.ProductPrice}`
+        ProductQuantity.value = `${dataforupdate.ProductQuantity}`
+        UpdateIndex = 1;
+        Indexfordataupdation = index
+    }
+
+    function printbill() {
+        const Billdatafortable = JSON.parse(localStorage.getItem('formData')) || [];
+
+        const tabledata = document.getElementById("tabledataforbill")
+        tabledata.innerHTML = ""
+        Billdatafortable.map((v, i) => {
+            const totalproductprice = v.ProductPrice * v.ProductQuantity;
+
+            const element = `<tr>
+                    <td>${i + 1}</td>
+                    <td>${v.ProductName}</td>
+                    <td>${v.Productcompany}</td>
+                    <td>${v.ProductPrice}</td>
+                    <td>${v.ProductQuantity}</td>
+                    <td>${totalproductprice}</td>
+                </tr>
+                `
+            tabledata.insertAdjacentHTML('beforeend', element);
+        })
+
+
+        const priceanditemElements = document.getElementsByClassName("priceanditem");
+
+        // Ensure you are working with each element if there are multiple
+        Array.from(priceanditemElements).forEach((priceanditem) => {
+            console.log(priceanditem);
+            priceanditem.innerHTML = "";
+
+            const element = `
+        <h3>Total Product: ${totalItem}</h3>
+        <h3>Total Price: ${totalPrice}</h3>`;
+
+            priceanditem.insertAdjacentHTML('beforeend', element);
+        });
+        print()
+    }
+    let i = 0;
+    async function savedata() {
+
+        i = ++i;
+        billno = Date.now() + String(i);
+        const billobj = {
+            BillNo: billno,
+            CashierName: cashierName,
+            CashierId: cashierId,
+            Date: date,
+            TotalItemQuantity: totalItem,
+            TotalItemPrice: totalPrice,
+            AllItemName: allproduct,
+        }
+
+        if (totalItem == 0 && totalPrice == 0) {
+            alert("Add something into a list")
+        }
+        else {
+            const response = await fetch('/Cashier/BillData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(billobj),
+            });
+
+            const data=await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+            }
+            else {
+                alert(`Failed to save the bill: ${response.statusText}`);
+            }
+        }
+
+    }
+</script>
+
+</html>

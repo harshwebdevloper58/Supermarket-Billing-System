@@ -1,0 +1,90 @@
+body{
+    overflow-x: hidden;
+}
+.container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 52px;
+}
+.Cashier-Data{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    background-color: rgba(217, 217, 217, 1);
+}
+.CashierData{
+    display: flex;
+    justify-content: space-between;
+    width: 88vw;
+}
+.inputformsandtable{
+    display: flex;
+    width: 90vw;
+    gap: 55px;
+    justify-content: space-between;
+    border: 1px solid;
+    padding: 15px;
+}
+.inputform{
+    width: 30%;
+}
+.table{
+    width: 60%;
+    height: 384px;
+    overflow: auto;
+}
+.billinfo{
+    border: 1px solid;
+    padding: 15px;
+    margin-bottom: 23px;
+}
+.cashRecived{
+    display: flex;
+    gap: 5px;
+}
+.cashinput{
+    width: 84px !important;
+}
+.displayallbilldata{
+    display: none;
+}
+
+@media print {
+    body * {
+        display: none;
+    }
+    .Cashier-Data, .Cashier-Data * {
+        display: flex;
+    }
+    .logoutbtn, .logoutbtn * {
+        display: none;
+    }
+    .displayallbilldata, .displayallbilldata * {
+        display: block;
+    }
+    .table tr {
+        display: table-row;
+    }
+    .table td, .table th {
+        display: table-cell; 
+        border: 1px solid black; 
+        padding: 8px; 
+        text-align: left; 
+    }
+    .table thead {
+        display: table-header-group;
+    }
+    .table tbody {
+        display: table-row-group; 
+    }
+    .table th {
+        background-color: #f2f2f2; 
+    }
+    .priceanditem,.priceanditem *{
+        display: flex;
+        justify-content: space-between;
+    }
+}

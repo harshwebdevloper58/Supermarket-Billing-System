@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Admin.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="navbar">
+            <nav>
+                <ul>
+                    <li><a href="/Admin">Billing-Details</a></li>
+                    <li> <button type="button" onclick="handleClick()" id="logoutbtn"
+                            class="btn btn-danger">Logout</button></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="datesearch">
+            <form id="form">
+                <label for=""> Date-search:</label>
+                <input type="date" class="form-control" name="billdate" id="billdate" aria-describedby="emailHelp"
+                    placeholder="Enter a date Here">
+                <button type="submit" class="btn btn-primary">Show</button>
+            </form>
+            <button type="submit" onclick="showall()" class="btn btn-primary showall">ShowAll</button>
+        </div>
+        <div class="line"></div>
+        <div class="billdata">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <td class="centar">No</td>
+                        <td class="centar">BillNo</td>
+                        <td class="centar">CashierName</td>
+                        <td class="centar">CashierId</td>
+                        <td class="centar">Date</td>
+                        <td class="centar">TotalItemQuantity</td>
+                        <td class="centar">TotalItemPrice</td>
+                        <td class="centar">AllItemName</td>
+                    </tr>
+                </thead>
+
+                <tbody class="billinfo">
+
+                </tbody>
+            </table>
+        </div>
+        <div class="line"></div>
+        <div class="totalbillinfo">
+
+        </div>
+
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script>
+    let totalproduct = 0;
+    let totalprice = 0;
+    fetch('/Admin/data')
+        .then(response => { return response.json() })
+        .then((data) => {
+            const container = document.getElementsByClassName("container")[0]
+            let AdminName = data.fullname;
+            let AdminId = data._id
+            const element = `<div class="intro">
+            <h3>DMART  (Admin Pannel)</h3>
+            <h3>Admin Name : ${AdminName}</h3>
+            <h3>Admin Id : ${AdminId}</h3>
+        </div>`
+
+            container.insertAdjacentHTML('afterbegin', element);
+
+        })
+
+    function showall() {
+        fetch('/Admin/billinfo')
+            .then(response => { return response.json() })
+            .then((data) => {
+                const billinfo = document.getElementsByClassName("billinfo")[0]
+                const gettotalinfo = document.getElementsByClassName("totalbillinfo")[0]
+                billinfo.innerHTML = ""
+                gettotalinfo.innerHTML=""
+                totalprice = 0;
+                totalproduct = 0;
+                
+                data.map((v, i) => {
+                    const element = `<tr>
+                    <td class="centar">${i + 1}</td>
+                    <td class="centar">${v.BillNo}</td>
+                    <td class="centar">${v.CashierName}</td>
+                    <td class="centar">${v.CashierId}</td>
+                    <td class="centar">${v.Date}</td>
+                    <td class="centar">${v.TotalItemQuantity}</td>
+                    <td class="centar">${v.TotalItemPrice}</td>
+                    <td class="centar">${v.AllItemName}</td>
+                </tr>`
+                    totalproduct += (v.TotalItemQuantity)
+                    totalprice += (v.TotalItemPrice)
+                    billinfo.insertAdjacentHTML('beforeend', element);
+                })
+               
+                const element = `          
+            <h5>Total Product:${totalproduct}</h5>
+            <h5>Total Price:${totalprice}</h5>
+            <button type="submit" onclick="printpage()" class="btn btn-primary showall">Print-Data</button>`
+                gettotalinfo.insertAdjacentHTML('beforeend', element);
+
+            })
+    }
+
+
+    async function handleClick() {
+        const response = await fetch('/logout');
+        if (response.redirected) {
+            window.location.href = response.url;
+        }
+    }
+
+    const form = document.getElementById("form")
+    form.addEventListener("submit", (event) => {
+        event.preventDefault()
+        const Formdata = new FormData(form)
+        const datedata = Object.fromEntries(Formdata)
+        const convertdate = convertDateFormat(datedata.billdate);
+        // console.log("date",convertdate)
+        // console.log(typeof(convertdate))
+        fetch('/Admin/billinfo')
+            .then(response => { return response.json() })
+            .then((data) => {
+                const billinfo = document.getElementsByClassName("billinfo")[0]
+                const commondatedata = data.filter((v) => {
+                    const formattedDate = convertDateFormat(v.Date);
+                    const datepart = formattedDate.split("/")
+                    const compairdate = `${datepart[2]}/${datepart[3]}/${datepart[4]}`
+                    return convertdate === compairdate;
+                });
+                console.log(commondatedata);
+                const gettotalinfo = document.getElementsByClassName("totalbillinfo")[0]
+                billinfo.innerHTML = ""
+                totalprice = 0;
+                totalproduct = 0;
+                gettotalinfo.innerHTML=""
+                commondatedata.map((v, i) => {
+                    const element = `<tr>
+                    <td class="centar">${i + 1}</td>
+                    <td class="centar">${v.BillNo}</td>
+                    <td class="centar">${v.CashierName}</td>
+                    <td class="centar">${v.CashierId}</td>
+                    <td class="centar">${v.Date}</td>
+                    <td class="centar">${v.TotalItemQuantity}</td>
+                    <td class="centar">${v.TotalItemPrice}</td>
+                    <td class="centar">${v.AllItemName}</td>
+                </tr>`
+                    totalproduct += (v.TotalItemQuantity)
+                    totalprice += (v.TotalItemPrice)
+                    billinfo.insertAdjacentHTML('beforeend', element);
+                })
+                const element = `          
+            <h5>Total Product:${totalproduct}</h5>
+            <h5>Total Price:${totalprice}</h5>
+            <button type="submit" onclick="printpage()" class="btn btn-primary showall">Print-Data</button>`
+                gettotalinfo.insertAdjacentHTML('beforeend', element);
+            })
+    })
+
+
+    function convertDateFormat(dateString) {
+        const parts = dateString.split('-');
+        const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return formattedDate;
+    }
+
+    function printpage(){
+        print()
+    }
+    window.onload = showall
+</script>
+
+</html>
